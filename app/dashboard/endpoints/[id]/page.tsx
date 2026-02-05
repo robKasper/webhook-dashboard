@@ -25,6 +25,7 @@ import { useToast } from "@/components/ui/toast";
 import { FiArrowLeft, FiCopy, FiTrash2, FiRefreshCw } from "react-icons/fi";
 import Link from "next/link";
 import { format } from "date-fns";
+import { deleteEndpoint } from "../../actions";
 
 interface Event {
   id: string;
@@ -130,14 +131,11 @@ export default function EndpointDetailPage({
 
   const handleDelete = async () => {
     setDeleting(true);
-    const { error } = await supabase
-      .from("webhook_endpoints")
-      .delete()
-      .eq("id", id);
 
-    if (error) {
-      console.error("Error deleting:", error);
-      showToast("Failed to delete endpoint", "error");
+    const result = await deleteEndpoint(id);
+
+    if (result.error) {
+      showToast(result.error, "error");
       setDeleting(false);
       setDeleteDialogOpen(false);
     } else {

@@ -18,6 +18,7 @@ import { FiPlus, FiLogOut, FiCopy, FiExternalLink } from "react-icons/fi";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import type { User } from "@supabase/supabase-js";
+import { createEndpoint } from "./actions";
 
 interface Endpoint {
   id: string;
@@ -103,18 +104,10 @@ export default function DashboardPage() {
 
     setCreating(true);
 
-    // Generate short unique ID
-    const webhookId = Math.random().toString(36).substring(2, 10);
+    const result = await createEndpoint(endpointName);
 
-    const { error } = await supabase.from("webhook_endpoints").insert({
-      user_id: user.id,
-      name: endpointName.trim(),
-      webhook_id: webhookId,
-    });
-
-    if (error) {
-      console.error("Error creating endpoint:", error);
-      showToast("Failed to create endpoint", "error");
+    if (result.error) {
+      showToast(result.error, "error");
     } else {
       showToast("Endpoint created successfully");
       loadEndpoints(user.id);
