@@ -122,7 +122,7 @@ npm run dev
 ### Testing with cURL
 
 ```bash
-curl -X POST https://localhost:3000/api/webhooks/YOUR_WEBHOOK_ID \
+curl -X POST http://localhost:3000/api/webhooks/YOUR_WEBHOOK_ID \
   -H "Content-Type: application/json" \
   -d '{"event": "test", "data": {"message": "Hello!"}}'
 ```
