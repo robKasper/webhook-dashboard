@@ -2,6 +2,10 @@
 
 A real-time webhook testing tool built with Next.js 16 and Supabase. Create unique webhook URLs, receive HTTP requests, and inspect payloads instantly.
 
+**[View Live Demo →](https://webhook-dashboard-drab.vercel.app)**
+
+![Webhook Dashboard](public/screenshots/dashboard.png)
+
 ## Features
 
 - **Unique Webhook URLs** - Generate dedicated endpoints for each integration you're testing
@@ -9,6 +13,12 @@ A real-time webhook testing tool built with Next.js 16 and Supabase. Create uniq
 - **Payload Inspection** - View headers, body content, and metadata for every request
 - **Rate Limiting** - Built-in protection with 60 requests/minute per webhook
 - **User Authentication** - Secure endpoints with Supabase Auth
+
+## Screenshots
+
+| Dashboard | Event Details |
+|-----------|---------------|
+| ![Dashboard](public/screenshots/dashboard.png) | ![Events](public/screenshots/events.png) |
 
 ## Tech Stack
 
@@ -122,7 +132,7 @@ npm run dev
 ### Testing with cURL
 
 ```bash
-curl -X POST http://localhost:3000/api/webhooks/YOUR_WEBHOOK_ID \
+curl -X POST https://webhook-dashboard-drab.vercel.app/api/webhooks/YOUR_WEBHOOK_ID \
   -H "Content-Type: application/json" \
   -d '{"event": "test", "data": {"message": "Hello!"}}'
 ```
@@ -149,19 +159,13 @@ curl -X POST http://localhost:3000/api/webhooks/YOUR_WEBHOOK_ID \
 
 ## Deployment
 
-### Vercel (Recommended)
+Deployed on Vercel: **[webhook-dashboard-drab.vercel.app](https://webhook-dashboard-drab.vercel.app)**
 
-1. Push your code to GitHub
-2. Import the project in [Vercel](https://vercel.com)
-3. Add environment variables in the Vercel dashboard
-4. Deploy
+Deploy your own:
 
-### Other Platforms
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/robKasper/webhook-dashboard)
 
-The app can be deployed to any platform that supports Next.js 16. Make sure to:
-- Set the environment variables
-- Configure the build command: `npm run build`
-- Configure the start command: `npm run start`
+Remember to add environment variables in the Vercel dashboard.
 
 ## Security
 
