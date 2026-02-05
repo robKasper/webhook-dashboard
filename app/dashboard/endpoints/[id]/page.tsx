@@ -77,12 +77,21 @@ export default function EndpointDetailPage({
           setEvents((prev) => [payload.new as Event, ...prev]);
         }
       )
-      .subscribe();
+      .subscribe((status, err) => {
+        if (status === "CHANNEL_ERROR") {
+          console.error("Real-time subscription error:", err);
+          showToast("Real-time updates unavailable. Use refresh to see new events.", "error");
+        }
+        if (status === "TIMED_OUT") {
+          console.error("Real-time subscription timed out");
+          showToast("Real-time connection timed out. Reconnecting...", "error");
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [id]);
+  }, [id, showToast]);
 
   const loadData = async () => {
     setLoading(true);
