@@ -163,6 +163,13 @@ The app can be deployed to any platform that supports Next.js 16. Make sure to:
 - Configure the build command: `npm run build`
 - Configure the start command: `npm run start`
 
+## Security
+
+See [docs/SECURITY.md](docs/SECURITY.md) for:
+- RLS policy explanations
+- Security model overview
+- Production hardening guide
+
 ## License
 
 MIT
