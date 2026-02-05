@@ -19,7 +19,9 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog";
+import { useToast } from "@/components/ui/toast";
 import { FiArrowLeft, FiCopy, FiTrash2, FiRefreshCw } from "react-icons/fi";
 import Link from "next/link";
 import { format } from "date-fns";
@@ -50,10 +52,12 @@ export default function EndpointDetailPage({
   const [endpoint, setEndpoint] = useState<Endpoint | null>(null);
   const [events, setEvents] = useState<Event[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
   const router = useRouter();
   const supabase = createClient();
+  const { showToast } = useToast();
 
   useEffect(() => {
     loadData();
@@ -116,9 +120,6 @@ export default function EndpointDetailPage({
   };
 
   const handleDelete = async () => {
-    if (!confirm("Delete this webhook endpoint? All events will be lost."))
-      return;
-
     setDeleting(true);
     const { error } = await supabase
       .from("webhook_endpoints")
@@ -127,9 +128,11 @@ export default function EndpointDetailPage({
 
     if (error) {
       console.error("Error deleting:", error);
-      alert("Failed to delete endpoint");
+      showToast("Failed to delete endpoint", "error");
       setDeleting(false);
+      setDeleteDialogOpen(false);
     } else {
+      showToast("Endpoint deleted successfully");
       router.push("/dashboard");
     }
   };
@@ -138,7 +141,7 @@ export default function EndpointDetailPage({
     if (!endpoint) return;
     const url = `${window.location.origin}/api/webhooks/${endpoint.webhook_id}`;
     navigator.clipboard.writeText(url);
-    alert("Webhook URL copied!");
+    showToast("Webhook URL copied to clipboard");
   };
 
   if (loading || !endpoint) {
@@ -169,7 +172,7 @@ export default function EndpointDetailPage({
             <Button
               variant="destructive"
               size="sm"
-              onClick={handleDelete}
+              onClick={() => setDeleteDialogOpen(true)}
               disabled={deleting}
             >
               <FiTrash2 className="mr-2" />
@@ -326,6 +329,34 @@ export default function EndpointDetailPage({
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Endpoint</DialogTitle>
+          </DialogHeader>
+          <p className="text-gray-600 py-4">
+            Are you sure you want to delete <strong>{endpoint.name}</strong>?
+            All webhook events will be permanently lost.
+          </p>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={deleting}
+            >
+              {deleting ? "Deleting..." : "Delete Endpoint"}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

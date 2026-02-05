@@ -5,6 +5,15 @@ import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { useToast } from "@/components/ui/toast";
 import { FiPlus, FiLogOut, FiCopy, FiExternalLink } from "react-icons/fi";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
@@ -23,8 +32,11 @@ export default function DashboardPage() {
   const [endpoints, setEndpoints] = useState<Endpoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [endpointName, setEndpointName] = useState("");
   const router = useRouter();
   const supabase = createClient();
+  const { showToast } = useToast();
 
   useEffect(() => {
     const checkUser = async () => {
@@ -81,9 +93,13 @@ export default function DashboardPage() {
     router.push("/auth/login");
   };
 
+  const openCreateDialog = () => {
+    setEndpointName("");
+    setDialogOpen(true);
+  };
+
   const handleCreateEndpoint = async () => {
-    const name = prompt("Enter a name for this webhook endpoint:");
-    if (!name || !user) return;
+    if (!endpointName.trim() || !user) return;
 
     setCreating(true);
 
@@ -92,15 +108,17 @@ export default function DashboardPage() {
 
     const { error } = await supabase.from("webhook_endpoints").insert({
       user_id: user.id,
-      name,
+      name: endpointName.trim(),
       webhook_id: webhookId,
     });
 
     if (error) {
       console.error("Error creating endpoint:", error);
-      alert("Failed to create endpoint");
+      showToast("Failed to create endpoint", "error");
     } else {
+      showToast("Endpoint created successfully");
       loadEndpoints(user.id);
+      setDialogOpen(false);
     }
 
     setCreating(false);
@@ -109,7 +127,7 @@ export default function DashboardPage() {
   const copyWebhookUrl = (webhookId: string) => {
     const url = `${window.location.origin}/api/webhooks/${webhookId}`;
     navigator.clipboard.writeText(url);
-    alert("Webhook URL copied to clipboard!");
+    showToast("Webhook URL copied to clipboard");
   };
 
   const getWebhookUrl = (webhookId: string) => {
@@ -149,9 +167,9 @@ export default function DashboardPage() {
               Create webhook endpoints to receive and test HTTP requests
             </p>
           </div>
-          <Button onClick={handleCreateEndpoint} disabled={creating} size="lg">
+          <Button onClick={openCreateDialog} disabled={creating} size="lg">
             <FiPlus className="mr-2" />
-            {creating ? "Creating..." : "New Endpoint"}
+            New Endpoint
           </Button>
         </div>
 
@@ -163,7 +181,7 @@ export default function DashboardPage() {
           <Card className="text-center py-12">
             <CardContent>
               <p className="text-gray-500 mb-4">No webhook endpoints yet</p>
-              <Button onClick={handleCreateEndpoint} disabled={creating}>
+              <Button onClick={openCreateDialog} disabled={creating}>
                 <FiPlus className="mr-2" />
                 Create Your First Endpoint
               </Button>
@@ -217,6 +235,41 @@ export default function DashboardPage() {
           </div>
         )}
       </main>
+
+      {/* Create Endpoint Dialog */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create New Endpoint</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <label htmlFor="name" className="text-sm font-medium mb-2 block">
+              Endpoint Name
+            </label>
+            <Input
+              id="name"
+              placeholder="e.g., Stripe Webhooks"
+              value={endpointName}
+              onChange={(e) => setEndpointName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleCreateEndpoint();
+              }}
+              autoFocus
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleCreateEndpoint}
+              disabled={creating || !endpointName.trim()}
+            >
+              {creating ? "Creating..." : "Create Endpoint"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
