@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -27,8 +27,8 @@ import { format } from "date-fns";
 interface Event {
   id: string;
   method: string;
-  headers: any;
-  body: any;
+  headers: Record<string, string>;
+  body: unknown;
   status_code: number;
   error_message: string | null;
   created_at: string;
@@ -44,8 +44,9 @@ interface Endpoint {
 export default function EndpointDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = use(params);
   const [endpoint, setEndpoint] = useState<Endpoint | null>(null);
   const [events, setEvents] = useState<Event[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
@@ -66,7 +67,7 @@ export default function EndpointDetailPage({
           event: "INSERT",
           schema: "public",
           table: "webhook_events",
-          filter: `endpoint_id=eq.${params.id}`,
+          filter: `endpoint_id=eq.${id}`,
         },
         (payload) => {
           setEvents((prev) => [payload.new as Event, ...prev]);
@@ -77,7 +78,7 @@ export default function EndpointDetailPage({
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [params.id]);
+  }, [id]);
 
   const loadData = async () => {
     setLoading(true);
@@ -86,7 +87,7 @@ export default function EndpointDetailPage({
     const { data: endpointData, error: endpointError } = await supabase
       .from("webhook_endpoints")
       .select("*")
-      .eq("id", params.id)
+      .eq("id", id)
       .single();
 
     if (endpointError) {
@@ -101,7 +102,7 @@ export default function EndpointDetailPage({
     const { data: eventsData, error: eventsError } = await supabase
       .from("webhook_events")
       .select("*")
-      .eq("endpoint_id", params.id)
+      .eq("endpoint_id", id)
       .order("created_at", { ascending: false })
       .limit(50);
 
@@ -122,7 +123,7 @@ export default function EndpointDetailPage({
     const { error } = await supabase
       .from("webhook_endpoints")
       .delete()
-      .eq("id", params.id);
+      .eq("id", id);
 
     if (error) {
       console.error("Error deleting:", error);

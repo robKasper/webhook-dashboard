@@ -5,10 +5,10 @@ import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { FiPlus, FiLogOut, FiCopy, FiExternalLink } from "react-icons/fi";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
+import type { User } from "@supabase/supabase-js";
 
 interface Endpoint {
   id: string;
@@ -19,7 +19,7 @@ interface Endpoint {
 }
 
 export default function DashboardPage() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [endpoints, setEndpoints] = useState<Endpoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
